@@ -62,30 +62,62 @@ Theta2_grad = zeros(size(Theta2));
 %               and Theta2_grad from Part 2.
 %
 
+eye_matrix = eye(num_labels);
+y_matrix = eye_matrix(y,:);
+
+a_1 = [ones(m, 1) X];
+z_2 = Theta1 * a_1'; % Theta1 x a1
+
+a_2 = sigmoid(z_2); % h_2 size is 2
+
+bias_2_size = size(a_2,2);
+a_2_biased = [ones(1,bias_2_size); a_2];
+
+z_3 = Theta2 * a_2_biased;
+h = sigmoid(z_3); % size 10 x 5000
 
 
+summand_1 = (-y_matrix).*log(h');
+summand_2 = (-y_matrix + 1).*log(-h'+1);
+grand_summand = summand_1 - summand_2;
 
+reg = lambda/(2*m) * (sum(sum(Theta1(:,2:end).^2)) + sum(sum(Theta2(:,2:end).^2)));
 
+J = ((1/m) * sum(sum(grand_summand(:)))) + reg;
 
+a_1 = [ones(m,1) X];
+z_2 = Theta1 * a_1'; % 25x1
 
+a_2 = sigmoid(z_2); % a_2 size is 25x1
+a_2_biased = [ones(1,m); a_2];
 
+z_3 = Theta2 * a_2_biased;
+a_3 = sigmoid(z_3);
 
+d3 = (a_3' - y_matrix)';
+d2 = (Theta2(:,2:end)' * d3) .* sigmoidGradient(z_2);
 
+Delta1 = d2 * a_1;
+Delta2 = d3 * a_2_biased';
 
-
-
-
-
-
-
-
-
+Theta1_grad = (1/m) * Delta1;
+Theta2_grad = (1/m) * Delta2;
 % -------------------------------------------------------------
 
 % =========================================================================
 
+Theta1(:,1)=0;
+ScaledTheta1 = (lambda/m) * Theta1;
+
+Theta2(:,1)=0;
+ScaledTheta2 = (lambda/m) * Theta2;
+
+Theta1_grad = Theta1_grad + ScaledTheta1;
+Theta2_grad = Theta2_grad + ScaledTheta2;
+
 % Unroll gradients
 grad = [Theta1_grad(:) ; Theta2_grad(:)];
+
 
 
 end
